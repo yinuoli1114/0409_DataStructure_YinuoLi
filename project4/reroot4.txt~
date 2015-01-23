@@ -1,0 +1,258 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <time.h>
+
+
+typedef struct Node{
+  struct Node *lcnode;
+  struct Node *rcnode;
+  char cutline;
+  double width;
+  double height;
+  
+}Node;
+
+typedef struct Stack{
+  Node *node;
+  struct Stack *next;
+}Stack;
+
+Node * Load_File(char *Filename);
+void reroot(Node *p, double sib_w, double sib_h, double *w, double *h, char or_c, int *flag, int *if_root);
+
+
+int main(int argc, char * * argv)
+{
+  
+  char *filename1 = argv[1];
+  Node *root = NULL;
+  root = Load_File(filename1);
+  printf("left = %le right = %le\n",root -> width, root -> height);
+  double w = root -> width;
+  double h = root -> height;
+ 
+  int flag = 0;
+  int if_root = 1;
+  reroot(root , root -> lcnode -> width, root -> lcnode -> height, &w, &h, root -> cutline, &flag, &if_root);
+  printf("best_w = %le best_h = %le\n", w,h);
+  
+  return 0;
+}
+
+double getbig(double a, double b)
+{
+  if(a > b)
+  {
+    return a;
+  }
+  else
+  {
+    return b;
+  }
+}  
+
+Node *Node_create(double width, double height, char cutline)
+{
+  Node *node = (Node *)malloc(sizeof(Node));
+  node -> width = width;
+  node -> height = height;
+  node -> cutline = cutline;
+  node -> lcnode = NULL;
+  node -> rcnode = NULL;
+  return node;
+}
+
+Stack *Stack_create(Node * node)
+{
+  Stack *st = NULL;
+  st = (Stack *)malloc(sizeof(Stack));
+  st -> node = node;
+  st -> next = NULL;
+  return st;
+}
+
+Stack *Stack_push(Stack *st, Node *node)
+{
+  Stack *stacktop = Stack_create(node);
+  stacktop -> next = st;
+  return stacktop;
+}
+
+Stack *Stack_pop(Stack *stacktop)
+{
+  Stack *new_stacktop = stacktop -> next;
+  free(stacktop);
+  return new_stacktop;
+}
+
+Node * Load_File(char *Filename)
+{
+  FILE *pfile;
+  if( !(pfile = fopen(Filename,"r")))
+  {
+    return NULL;
+  }
+  int finish = 0;
+  char temp = 0;
+  double width;
+  double height;
+  Node * leaf = NULL;
+  Node * nodetop = NULL;
+  Node * right = NULL;
+  Node * left = NULL;
+  Stack * stacktop = NULL;
+  
+  while(finish == 0)
+  {
+    
+    temp = fgetc(pfile);
+    if(temp == -1)
+    {
+     
+      break;
+    }
+   
+    if(temp == '(')
+    {
+      fscanf(pfile,"%le,%le)", &width, &height);
+      leaf = Node_create(width, height,-1);
+      stacktop = Stack_push(stacktop, leaf);
+      //printf("leaf -> width = %le\n", stacktop -> node -> width);
+    }
+    if(temp == 'H' || temp == 'V')
+    {
+      right = stacktop -> node;
+      //printf("stacktop -> node -> width = %le\n", stacktop -> node -> width);
+      stacktop = Stack_pop(stacktop);
+      
+      if(stacktop == NULL)
+      {
+	finish = 1;
+      }
+      else
+      {
+	left = stacktop -> node;
+	//printf("stacktop -> node -> width = %le\n", stacktop -> node -> width);
+	stacktop = Stack_pop(stacktop);
+	
+	if(temp == 'V')
+	{
+	  //printf("%c\n",temp);
+	  width = left -> width + right -> width;
+	  height = getbig(left -> height, right -> height);
+	}
+	if(temp == 'H')
+	{
+	  //printf("%c\n",temp);
+	  height = left -> height + right -> height;
+	  width = getbig(left -> width, right -> width);
+	}
+	nodetop = Node_create(width, height, temp);
+	nodetop -> lcnode = left;
+	nodetop -> rcnode = right;
+	//printf("nodetop -> lcnode -> width = %le\n", nodetop -> lcnode -> width);
+	stacktop = Stack_push(stacktop, nodetop);
+      }
+    }
+    
+  }
+  
+  
+    return nodetop;
+  
+} 
+
+void reroot(Node *p, double sib_w, double sib_h, double *w, double *h, char or_c, int *flag, int *if_root)
+{
+  if(p -> cutline == -1)
+  {
+    return;
+  }
+  double new_w;
+  double new_h;
+  double or_w;
+  double or_h;
+  printf("flag = %d\n", *flag);
+  if(*if_root == 0)
+  {
+  if(*flag == 0)//zuozuo, youzuo
+  {
+    if(or_c == 'V')
+    {
+      or_w = p -> rcnode -> width + sib_w;
+      or_h = getbig(p -> rcnode -> height, sib_h);
+    }
+    if(or_c == 'H')
+    {
+      or_h = p -> rcnode -> height + sib_h;
+      or_w = getbig(p -> rcnode -> width, sib_w);
+    }
+    if(p -> cutline == 'V')
+    {
+      new_w = p -> lcnode -> width + or_w;
+      new_h = getbig(p -> lcnode -> height, or_h);
+    }
+    if(p -> cutline == 'H')
+    {
+      new_h = p -> lcnode -> height + or_h;
+      new_w = getbig(p -> lcnode -> width, or_w);
+    }
+  }
+  if(*flag == 1)//zuoyou youyou
+  {
+    if(or_c == 'V')
+    {
+      or_w = p -> lcnode -> width + sib_w;
+      or_h = getbig(p -> lcnode -> height, sib_h);
+    }
+    if(or_c == 'H')
+    {
+      or_h = p -> lcnode -> height + sib_h;
+      or_w = getbig(p -> lcnode -> width, sib_w);
+    }
+    if(p -> cutline == 'V')
+    {
+      new_w = p -> rcnode -> width + or_w;
+      new_h = getbig(p -> rcnode -> height, or_h);
+    }
+    if(p -> cutline == 'H')
+    {
+      new_h = p -> rcnode -> height + or_h;
+      new_w = getbig(p -> rcnode -> width, or_w);
+    }
+  }
+  printf("new_w = %le new_h = %le\n",new_w, new_h);
+  *flag = 0;
+  if(new_w * new_h < (*w) * (*h))
+  {
+    *w = new_w;
+    *h = new_h;
+  }
+  }
+  if(*if_root == 1)
+  {
+    or_w = p -> lcnode -> width;
+    or_w = p -> lcnode -> height;
+  }
+  *if_root = 0;
+  reroot(p -> lcnode, or_w, or_h, w, h, p -> cutline, flag, if_root);
+  *flag = 1;
+  reroot(p -> rcnode, or_w, or_h, w, h, p -> cutline, flag, if_root);
+  return;
+}
+    
+    
+    
+  
+  
+
+  
+  
+  
+  
+  
+  
+  
+  
+  

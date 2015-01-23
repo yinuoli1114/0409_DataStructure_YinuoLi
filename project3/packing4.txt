@@ -1,0 +1,262 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <time.h>
+
+typedef struct node{
+  int thisnode;
+  int parnode;
+  int lcnode;
+  int rcnode;
+  char cutline;
+  double width;
+  double height;
+  double xcoord;
+  double ycoord;
+}Node;
+
+Node **Load_File(char *Filename, int *nodenum, int *leafnum);
+void count_wh(Node **p, int ind);
+void count_xy(Node **p, int ind);
+
+int main(int argc, char * * argv)
+{
+  
+   int nodenum = 0;
+   int leafnum = 0;
+   char *filename1 = argv[1];
+   Node **arr = NULL;
+   arr = Load_File(filename1, &nodenum, &leafnum);
+   
+   //double width = 0; 
+   //double height = 0;
+   
+   count_wh(arr, nodenum - 1);
+   
+   printf("width = %lf\n", arr[nodenum - 1] -> width);
+   printf("height = %lf\n", arr[nodenum - 1] -> height);
+   int i;
+   for(i = 0; i < nodenum; i++)
+   {
+     printf("arr[%d] -> %lf\n", i+1, arr[i] -> width);
+     printf("arr[%d] -> %lf\n", i+1, arr[i] -> height);
+     printf("arr[%d] -> %lf\n", i+1, arr[i] -> xcoord);
+     printf("arr[%d] -> %lf\n", i+1, arr[i] -> ycoord);
+   }
+   
+   
+   count_xy(arr, nodenum - 1);
+   
+   for(i = 0; i < nodenum; i++)
+   {
+     printf("arr[%d] -> %lf\n", i+1, arr[i] -> width);
+     printf("arr[%d] -> %lf\n", i+1, arr[i] -> height);
+     printf("arr[%d] -> %lf\n", i+1, arr[i] -> xcoord);
+     printf("arr[%d] -> %lf\n", i+1, arr[i] -> ycoord);
+   }
+   printf("%d\n", leafnum);
+   for(i = 0; i < leafnum; i++)
+   {
+     printf("%d ", i+1);
+     printf("%lf ", arr[i] -> width);
+     printf("%lf ", arr[i] -> height);
+     printf("%lf ", arr[i] -> xcoord);
+     printf("%lf \n", arr[i] -> ycoord);
+   } 
+   return 0;
+}
+
+Node *Node_create(int thisnode, int parnode, int lcnode, int rcnode, char cutline, double width, double height, double xcoord, double ycoord)
+{
+  Node *node = (Node *)malloc(sizeof(Node));
+  node -> thisnode = thisnode;
+  node -> parnode = parnode;
+  node -> lcnode = lcnode;
+  node -> rcnode = rcnode;
+  node -> cutline = cutline;
+  node -> width = width;
+  node -> height = height;
+  node -> xcoord = xcoord;
+  node -> ycoord = ycoord;
+  return node;
+}
+ 
+Node **Load_File(char *Filename, int *nodenum, int *leafnum)
+{
+  FILE *pfile;
+  int thisnode, parnode, lcnode, rcnode;
+  double width, height, xcoord, ycoord;
+  char cutline;
+  double jiba;
+  if( !(pfile = fopen(Filename,"r")))
+  {
+    return NULL;
+  }
+  int value = 0;
+  double nima;
+  fscanf(pfile,"%d",&value);
+  *leafnum = value;
+  fscanf(pfile,"%d",&value);
+  *nodenum = value;
+  Node **p = NULL;
+  p = (Node **)malloc(sizeof(Node) * *nodenum);
+  int i;
+  
+  for(i = 0; i < *nodenum; i++)
+  {
+    fscanf(pfile,"%d",&value);
+    thisnode = value;
+    //printf("p[%d] -> %d\n", i, thisnode);
+    fscanf(pfile,"%d",&value);
+    parnode = value;
+    fscanf(pfile,"%d",&value);
+    lcnode = value;
+    fscanf(pfile,"%d",&value);
+    rcnode = value;
+    fscanf(pfile,"%c",&cutline);
+    fscanf(pfile,"%c",&cutline);
+    if(cutline == 'H' || cutline == 'V')
+    {
+      width = 0;
+      height = 0;
+      fscanf(pfile,"%lf",&jiba);
+      fscanf(pfile,"%lf",&jiba);
+    }
+    else
+    {
+      fscanf(pfile,"%lf",&nima);
+      width = nima;
+      fscanf(pfile,"%lf",&nima);
+      height = nima;
+    }
+    xcoord = 0;
+    ycoord = 0;
+    p[i] = Node_create(thisnode, parnode, lcnode, rcnode, cutline, width, height, xcoord, ycoord);
+    //printf("p[%d] -> %d\n", i, p[i] -> thisnode);
+   // printf("p[%d] -> %d\n", i, p[i] -> parnode);
+   // printf("p[%d] -> %d\n", i, p[i] -> lcnode);
+   // printf("p[%d] -> %d\n", i, p[i] -> rcnode);
+   // printf("p[%d] -> %c\n", i, p[i] -> cutline);
+   // printf("p[%d] -> %lf\n", i, p[i] -> width);
+   // printf("p[%d] -> %lf\n", i, p[i] -> height);
+   // printf("p[%d] -> %lf\n", i, p[i] -> xcoord);
+    //printf("p[%d] -> %lf\n", i, p[i] -> ycoord);
+    
+  }
+  return p;//point to the first element of the arr
+}
+
+double getbig(double a, double b)
+{
+  if(a > b)
+  {
+    return a;
+  }
+  else
+  {
+    return b;
+  }
+}
+
+void count_wh(Node **p, int ind)
+{
+  if(p[ind] -> width > 0)
+  {
+    return;
+  }
+  count_wh(p, p[ind] -> lcnode - 1);
+  count_wh(p, p[ind] -> rcnode - 1);
+  if(p[ind] -> cutline == 'V')
+  {
+    p[ind] -> width = p[p[ind] -> lcnode - 1] -> width + p[p[ind] -> rcnode - 1] -> width;
+    p[ind] -> height = getbig(p[p[ind] -> lcnode - 1] -> height, p[p[ind] -> rcnode - 1] -> height);
+  }
+  if(p[ind] -> cutline == 'H')
+  {
+    p[ind] -> height = p[p[ind] -> lcnode - 1] -> height + p[p[ind] -> rcnode - 1] -> height;
+    p[ind] -> width = getbig(p[p[ind] -> lcnode - 1] -> width, p[p[ind] -> rcnode - 1] -> width);
+  }
+  return;
+}
+
+void count_xy(Node **p, int ind)
+{
+  if(p[ind] -> lcnode < 0)
+  {
+    return;
+  }
+  if(p[ind] -> parnode == -1)
+  {
+    p[ind] -> xcoord = 0;
+    p[ind] -> ycoord = 0;
+  }
+  else if(p[ind] -> parnode > 0)
+  {
+    if(p[p[ind] -> parnode -1] -> lcnode == p[ind] -> thisnode)
+    {
+      if(p[p[ind] -> parnode - 1] -> cutline == 'H')
+      {
+        p[ind] -> xcoord = p[p[ind] -> parnode - 1] -> xcoord;
+        p[ind] -> ycoord = p[p[ind] -> parnode - 1] -> height - p[ind] -> height + p[p[ind] -> parnode - 1] -> ycoord;
+      }
+      if(p[p[ind] -> parnode - 1] -> cutline == 'V')
+      {
+        p[ind] -> ycoord = p[p[ind] -> parnode - 1] -> ycoord;
+        p[ind] -> xcoord = p[p[ind] -> parnode - 1] -> xcoord;
+      }
+    }
+    else if(p[p[ind] -> parnode -1] -> rcnode == p[ind] -> thisnode)
+    {
+      if(p[p[ind] -> parnode - 1] -> cutline == 'H')
+      {
+        p[ind] -> xcoord = p[p[ind] -> parnode - 1] -> xcoord;
+        p[ind] -> ycoord = p[p[ind] -> parnode - 1] -> ycoord;
+      }
+      if(p[p[ind] -> parnode - 1] -> cutline == 'V')
+      {
+        p[ind] -> ycoord = p[p[ind] -> parnode - 1] -> ycoord;
+        p[ind] -> xcoord = p[p[ind] -> parnode - 1] -> width - p[ind] -> width + p[p[ind] -> parnode - 1] -> xcoord;
+      }
+    }  
+  }
+  count_xy(p, p[ind] -> lcnode - 1);
+  if(p[ind] -> lcnode == p[p[ind] -> lcnode - 1] -> thisnode)
+  {
+    if(p[ind] -> cutline == 'H')
+    {
+      p[p[ind] -> lcnode - 1] -> xcoord = p[ind] -> xcoord;
+      p[p[ind] -> lcnode - 1] -> ycoord = p[ind] -> height - p[p[ind] -> lcnode - 1] -> height + p[ind] -> ycoord;
+    }
+    
+    if(p[ind] -> cutline == 'V')
+    {
+      p[p[ind] -> lcnode - 1] -> ycoord = p[ind] -> ycoord;
+      p[p[ind] -> lcnode - 1] -> xcoord = p[ind] -> xcoord;
+    }
+  }
+  
+    
+  count_xy(p, p[ind] -> rcnode - 1);
+  if(p[ind] -> rcnode == p[p[ind] -> rcnode - 1] -> thisnode)
+  {
+    if(p[ind] -> cutline == 'H')
+    {
+      p[p[ind] -> rcnode - 1] -> xcoord = p[ind] -> xcoord;
+      p[p[ind] -> rcnode - 1] -> ycoord = p[ind] -> ycoord;
+    }
+    
+    if(p[ind] -> cutline == 'V')
+    {
+      p[p[ind] -> rcnode - 1] -> ycoord = p[ind] -> ycoord;
+      p[p[ind] -> rcnode - 1] -> xcoord = p[ind] -> width - p[p[ind] -> rcnode - 1] -> width + p[ind] -> xcoord;
+    }
+  }
+  
+ 
+  return;
+}
+  
+  
+  
+  
+  

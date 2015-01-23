@@ -1,0 +1,260 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <time.h>
+
+
+typedef struct Node{
+  struct Node *lcnode;
+  struct Node *rcnode;
+  char cutline;
+  double width;
+  double height;
+  
+}Node;
+
+typedef struct Stack{
+  Node *node;
+  struct Stack *next;
+}Stack;
+
+Node * Load_File(char *Filename);
+void reroot(Node *p, Node *cur, double sib_w, double sib_h, double *w, double *h, char g_c, double low_w, double low_h);
+Node *Node_create(double width, double height, char cutline);
+
+int main(int argc, char * * argv)
+{
+  
+  char *filename1 = argv[1];
+  Node *head = NULL;
+  head = Load_File(filename1);
+  printf("left = %le right = %le\n",head -> width, head -> height);
+  double w = head -> width;
+  double h = head -> height;
+ 
+ // int is_root = 1;
+ // int lr = 0;
+  Node *root = Node_create(0,0,'H');
+  Node *sibroot = Node_create(0,0,'H');
+  Node *zero1 = Node_create(0,0,-1);
+  Node *zero2 = Node_create(0,0,-1);
+  root -> lcnode = head;
+  root -> rcnode = sibroot;
+  sibroot -> lcnode = zero1;
+  sibroot -> rcnode = zero2;
+  reroot(root , root -> lcnode, root -> rcnode -> rcnode -> width, root-> rcnode -> rcnode -> height, &w, &h, root -> rcnode -> cutline, root->rcnode->lcnode->width,root->rcnode->lcnode->height);
+  printf("best_w = %le best_h = %le\n", w,h);
+  
+  return 0;
+}
+
+double getbig(double a, double b)
+{
+  if(a > b)
+  {
+    return a;
+  }
+  else
+  {
+    return b;
+  }
+}  
+
+Node *Node_create(double width, double height, char cutline)
+{
+  Node *node = (Node *)malloc(sizeof(Node));
+  node -> width = width;
+  node -> height = height;
+  node -> cutline = cutline;
+  node -> lcnode = NULL;
+  node -> rcnode = NULL;
+  return node;
+}
+
+Stack *Stack_create(Node * node)
+{
+  Stack *st = NULL;
+  st = (Stack *)malloc(sizeof(Stack));
+  st -> node = node;
+  st -> next = NULL;
+  return st;
+}
+
+Stack *Stack_push(Stack *st, Node *node)
+{
+  Stack *stacktop = Stack_create(node);
+  stacktop -> next = st;
+  return stacktop;
+}
+
+Stack *Stack_pop(Stack *stacktop)
+{
+  Stack *new_stacktop = stacktop -> next;
+  free(stacktop);
+  return new_stacktop;
+}
+
+Node * Load_File(char *Filename)
+{
+  FILE *pfile;
+  if( !(pfile = fopen(Filename,"r")))
+  {
+    return NULL;
+  }
+  int finish = 0;
+  char temp = 0;
+  double width;
+  double height;
+  Node * leaf = NULL;
+  Node * nodetop = NULL;
+  Node * right = NULL;
+  Node * left = NULL;
+  Stack * stacktop = NULL;
+  
+  while(finish == 0)
+  {
+    
+    temp = fgetc(pfile);
+    if(temp == -1)
+    {
+     
+      break;
+    }
+   
+    if(temp == '(')
+    {
+      fscanf(pfile,"%le,%le)", &width, &height);
+      leaf = Node_create(width, height,-1);
+      stacktop = Stack_push(stacktop, leaf);
+      //printf("leaf -> width = %le\n", stacktop -> node -> width);
+    }
+    if(temp == 'H' || temp == 'V')
+    {
+      right = stacktop -> node;
+      //printf("stacktop -> node -> width = %le\n", stacktop -> node -> width);
+      stacktop = Stack_pop(stacktop);
+      
+      if(stacktop == NULL)
+      {
+	finish = 1;
+      }
+      else
+      {
+	left = stacktop -> node;
+	//printf("stacktop -> node -> width = %le\n", stacktop -> node -> width);
+	stacktop = Stack_pop(stacktop);
+	
+	if(temp == 'V')
+	{
+	  //printf("%c\n",temp);
+	  width = left -> width + right -> width;
+	  height = getbig(left -> height, right -> height);
+	}
+	if(temp == 'H')
+	{
+	  //printf("%c\n",temp);
+	  height = left -> height + right -> height;
+	  width = getbig(left -> width, right -> width);
+	}
+	nodetop = Node_create(width, height, temp);
+	nodetop -> lcnode = left;
+	nodetop -> rcnode = right;
+	//printf("nodetop -> lcnode -> width = %le\n", nodetop -> lcnode -> width);
+	stacktop = Stack_push(stacktop, nodetop);
+      }
+    }
+    
+  }
+  
+  
+    return nodetop;
+  
+} 
+
+void reroot(Node *p, Node *cur, double sib_w, double sib_h, double *w, double *h, char g_c, double low_w, double low_h)
+{
+  if(cur == NULL)
+  {
+    printf("leaf\n");
+   // printf("leaf_w = %le leaf_h = %le \n", cur -> width, cur -> height);
+    return;
+  }
+  double new_w;
+  double new_h;
+  double g_w;
+  double g_h;
+ 
+
+    if(g_c == 'V')
+    {
+      g_w = low_w + sib_w;
+      g_h = getbig(low_h, sib_h);
+      
+    }
+    if(g_c == 'H')
+    {
+      g_h = low_h + sib_h;
+      g_w = getbig(low_w, sib_w);
+    }
+    if(p -> cutline == 'V')
+    {
+      new_w = cur -> width + g_w;
+      new_h = getbig(cur -> height, g_h);
+    }
+    if(p -> cutline == 'H')
+    {
+      new_h = cur -> height + g_h;
+      new_w = getbig(cur -> width, g_w);
+    }
+  
+    
+    printf("g_w = %le", g_w);
+    printf(" g_h = %le\n", g_h);
+    printf("new_w = %le", new_w);
+    printf(" new_h = %le\n", new_h);
+
+  
+  
+  if(new_w * new_h < (*w) * (*h))
+  {
+    *w = new_w;
+    *h = new_h;
+  }
+ 
+  
+ if(cur -> rcnode)
+ {
+  reroot(cur, cur -> lcnode, g_w, g_h, w, h, p -> cutline, cur -> rcnode -> width, cur -> rcnode -> height);
+ }
+ else
+ {
+   reroot(cur, cur -> lcnode, g_w, g_h, w, h, p -> cutline, cur ->  width, cur -> height);
+ }
+  printf("going to turn right\n");
+  printf("cur_w = %le cur_h = %le \n", cur -> width, cur -> height);
+  //*lr = 1;
+  if(cur -> lcnode)
+  {
+  reroot(cur, cur -> rcnode, g_w, g_h, w, h, p -> cutline, cur -> lcnode -> width, cur -> lcnode -> height);
+  }
+  else
+  {
+    reroot(cur, cur -> rcnode, g_w, g_h, w, h, p -> cutline, cur -> width, cur -> height);
+  }
+  return;
+}
+    
+    
+    
+  
+  
+
+  
+  
+  
+  
+  
+  
+  
+  
+  

@@ -1,0 +1,149 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <time.h>
+
+typedef struct node{
+  int thisnode;
+  int parnode;
+  int lcnode;
+  int rcnode;
+  char cutline;
+  double width;
+  double height;
+}Node;
+
+Node **Load_File(char *Filename, int *nodenum);
+void count_wh(Node **p, int ind, double *width, double *height);
+
+int main(int argc, char * * argv)
+{
+  
+   int nodenum = 0;
+   char *filename1 = argv[1];
+   Node **arr = NULL;
+   arr = Load_File(filename1, &nodenum);
+   
+   double width = 0; 
+   double height = 0;
+   
+   count_wh(arr, nodenum - 1, &width, &height);
+   
+   printf("width = %lf\n", width);
+   printf("height = %lf\n", height);
+   
+   return 0;
+}
+
+Node *Node_create(int thisnode, int parnode, int lcnode, int rcnode, char cutline, double width, double height)
+{
+  Node *node = (Node *)malloc(sizeof(Node));
+  node -> thisnode = thisnode;
+  node -> parnode = parnode;
+  node -> lcnode = lcnode;
+  node -> rcnode = rcnode;
+  node -> cutline = cutline;
+  node -> width = width;
+  node -> height = height;
+  return node;
+}
+ 
+Node **Load_File(char *Filename, int *nodenum)
+{
+  FILE *pfile;
+  int thisnode, parnode, lcnode, rcnode;
+  double width, height;
+  char cutline;
+  double jiba;
+  if( !(pfile = fopen(Filename,"r")))
+  {
+    return NULL;
+  }
+  int value = 0;
+  double nima;
+  fscanf(pfile,"%d",&value);
+  int leafnum = value;
+  fscanf(pfile,"%d",&value);
+  *nodenum = value;
+  Node **p = NULL;
+  p = (Node **)malloc(sizeof(Node) * *nodenum);
+  int i;
+  
+  for(i = 0; i < *nodenum; i++)
+  {
+    fscanf(pfile,"%d",&value);
+    thisnode = value;
+    //printf("p[%d] -> %d\n", i, thisnode);
+    fscanf(pfile,"%d",&value);
+    parnode = value;
+    fscanf(pfile,"%d",&value);
+    lcnode = value;
+    fscanf(pfile,"%d",&value);
+    rcnode = value;
+    fscanf(pfile,"%c",&cutline);
+    fscanf(pfile,"%c",&cutline);
+    if(cutline == 'H' || cutline == 'V')
+    {
+      width = 0;
+      height = 0;
+      fscanf(pfile,"%lf",&jiba);
+      fscanf(pfile,"%lf",&jiba);
+    }
+    else
+    {
+      fscanf(pfile,"%lf",&nima);
+      width = nima;
+      fscanf(pfile,"%lf",&nima);
+      height = nima;
+    }
+    p[i] = Node_create(thisnode, parnode, lcnode, rcnode, cutline, width, height);
+    printf("p[%d] -> %d\n", i, p[i] -> thisnode);
+    printf("p[%d] -> %d\n", i, p[i] -> parnode);
+    printf("p[%d] -> %d\n", i, p[i] -> lcnode);
+    printf("p[%d] -> %d\n", i, p[i] -> rcnode);
+    printf("p[%d] -> %c\n", i, p[i] -> cutline);
+    printf("p[%d] -> %lf\n", i, p[i] -> width);
+    printf("p[%d] -> %lf\n", i, p[i] -> height);
+    
+  }
+  return p;//point to the first element of the arr
+}
+
+double getbig(double a, double b)
+{
+  if(a > b)
+  {
+    return a;
+  }
+  else
+  {
+    return b;
+  }
+}
+
+void count_wh(Node **p, int ind, double *width, double *height)
+{
+  if(p[ind] -> width > 0)
+  {
+    return;
+  }
+  count_wh(p, p[ind] -> lcnode - 1, width, height);
+  count_wh(p, p[ind] -> rcnode - 1, width, height);
+  if(p[ind] -> cutline == 'V')
+  {
+    *width = *width + p[p[ind] -> lcnode - 1] -> width + p[p[ind] -> rcnode - 1] -> width;
+    *height = *height + getbig(p[p[ind] -> lcnode - 1] -> height, p[p[ind] -> rcnode - 1] -> height);
+  }
+  if(p[ind] -> cutline == 'H')
+  {
+    *height = *height + p[p[ind] -> lcnode - 1] -> height + p[p[ind] -> rcnode - 1] -> height;
+    *width = *width + getbig(p[p[ind] -> lcnode - 1] -> width, p[p[ind] -> rcnode - 1] -> width);
+  }
+  return;
+}
+  
+  
+  
+  
+  
+  

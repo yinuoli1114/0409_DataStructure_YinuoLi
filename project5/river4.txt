@@ -1,0 +1,202 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <time.h>
+
+typedef struct Ver{
+  int colum;
+  int start;
+  int end;
+  struct Edge *next;
+}Ver;
+
+typedef struct Edge{
+  int ind;
+  int weight;
+  struct Edge *next;
+}Edge;
+
+
+int ** Load_File(char *Filename, int *num);
+Ver **Varr_build(int **arr, int n);
+
+int main(int argc, char * * argv)
+{
+  char *filename1 = argv[1];
+  int **arr = NULL;
+  Ver **varr = NULL;
+  int num = 0;
+  arr = Load_File(filename1, &num);
+  varr = Varr_build(arr, num);
+ 
+  printf("arr[2][1] = %d\n",arr[2][1]);
+  printf("fffff\n");
+  return 0;
+}
+
+Ver *Ver_create(int colum, int start, int end)
+{
+  Ver *v = NULL;
+  v = (Ver *)malloc(sizeof(Ver));
+  v -> colum = colum;
+  v -> start = start;
+  v -> end = end;
+  v -> next = NULL;
+  return v;
+}
+
+Edge *Edge_create(int ind, int weight)
+{
+  Edge *e = NULL;
+  e -> ind = ind;
+  e -> weight = weight;
+  e -> next = NULL;
+  return e;
+}
+
+int ** Load_File(char *Filename, int *num)
+{
+  FILE *pfile;
+  if( !(pfile = fopen(Filename,"r")))
+  {
+    return NULL;
+  }
+  
+  char temp = 0;
+  int n = 0;
+  int i = 0;
+  int j = 0;
+  
+  
+  fscanf(pfile, "%d", &n);
+  printf("n = %d\n", n);
+  *num = n;
+  int **arr = (int**)malloc(sizeof(int*) * (n - 1));
+  temp = fgetc(pfile);
+  for(i = 0; i < n - 1; i++)
+  {
+    arr[i] = (int*)malloc(sizeof(int) * n);
+    for(j = 0; j < n; j++)
+    {
+      temp = fgetc(pfile);
+      
+      arr[i][j] = temp - 48;
+      printf("temp = %d\n", arr[i][j]);
+    }
+    temp = fgetc(pfile);
+  }
+  fclose(pfile);
+  return arr;
+}
+
+Ver **Varr_build(int **arr, int n)
+{
+  int ip = 0;
+  int i = 0;
+  int j = 0;
+  int start = 0;
+  int end = 0;
+  int ifv = 1;
+  
+  Ver **p = NULL;
+  for(i = 0; i < n - 1; i++)
+  {
+    for(j = 0; j < n; j++)
+    {
+      start = i;
+      end = i;
+      if(i != 0)
+      {
+	if(arr[i - 1][j] == 0)
+	{
+	  if(arr[i][j] == 1)
+	  {
+	    while( ((end + 1) < n - 1) && arr[end + 1][j] == 1)
+	    {
+	      end++;
+	    }
+	    ip++;
+	  }
+	}
+      }
+      if(i == 0)
+      {
+	if(arr[i][j] == 1)
+	{
+	  if(arr[i][j] == 1)
+	  {
+	    while( ((end + 1) < n - 1) && arr[end + 1][j] == 1)
+	    {
+	      end++;
+	    }
+	    ip++;
+	  }
+	}
+      }
+    }
+  }
+  printf("ip = %d\n", ip);
+  p = (Ver **)malloc(sizeof(Ver) * ip);
+  ip = 0;
+   for(i = 0; i < n - 1; i++)
+  {
+    for(j = 0; j < n; j++)
+    {
+      start = i;
+      end = i;
+      if(i != 0)
+      {
+	if(arr[i - 1][j] == 0)
+	{
+	  if(arr[i][j] == 1)
+	  {
+	    while( ((end + 1) < n - 1) && arr[end + 1][j] == 1)
+	    {
+	      end++;
+	    }
+	    p[ip] = Ver_create(j, start, end);
+	    printf("p[%d] -> colum = %d ", ip, p[ip] -> colum);
+            printf("p[%d] -> start = %d ", ip, p[ip] -> start);
+            printf("p[%d] -> end = %d\n", ip, p[ip] -> end);
+	    ip++;
+	  }
+	}
+      }
+      if(i == 0)
+      {
+	if(arr[i][j] == 1)
+	{
+	  if(arr[i][j] == 1)
+	  {
+	    while( ((end + 1) < n - 1) && arr[end + 1][j] == 1)
+	    {
+	      end++;
+	    }
+	    p[ip] = Ver_create(j, start, end);
+	    printf("p[%d] -> colum = %d ", ip, p[ip] -> colum);
+            printf("p[%d] -> start = %d ", ip, p[ip] -> start);
+            printf("p[%d] -> end = %d\n", ip, p[ip] -> end);
+	    ip++;
+	  }
+	}
+      }
+    }
+  }
+  
+  return p;
+}
+      
+  
+  
+  
+
+
+
+
+
+
+
+
+
+
+

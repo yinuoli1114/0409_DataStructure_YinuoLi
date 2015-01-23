@@ -1,0 +1,73 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <time.h>
+
+typedef struct node{
+  int thisnode;
+  int parnode;
+  int lcnode;
+  int rcnode;
+  char cutline;
+  int width;
+  int height;
+}Node;
+
+Node *Node_create(int thisnode, int parnode, int lcnode, int rcnode, char cutline, int width, int height)
+{
+  Node *node = (Node *)malloc(sizeof(Node));
+  node -> thisnode = thisnode;
+  node -> parnode = parnode;
+  node -> lcnode = lcnode;
+  node -> rcnode = rcnode;
+  node -> cutline = cutline;
+  node -> width = width;
+  node -> height = height;
+  return node;
+}
+ 
+Node *Load_File(char *Filename)
+{
+  FILE *pfile;
+  int thisnode, parnode, lcnode, rcnode, width, height;
+  char cutline;
+  if( !(pfile = fopen(Filename,"r")))
+  {
+    return NULL;
+  }
+  int value = 0;
+  
+  fscanf(pfile,"%d",&value);
+  int leafnum = value;
+  fscanf(pfile,"%d",&value);
+  int nodenum = value;
+  Node *p = NULL;
+  p = (Node *)malloc(sizeof(Node) * nodenum);
+  int i;
+  
+  for(i = 0; i < nodenum; i++)
+  {
+    fscanf(pfile,"%d",&value);
+    thisnode = value;
+    fscanf(pfile,"%d",&value);
+    parnode = value;
+    fscanf(pfile,"%d",&value);
+    lcnode = value;
+    fscanf(pfile,"%d",&value);
+    rcnode = value;
+    fscanf(pfile,"%c",&cutline);
+    fscanf(pfile,"%d",&value);
+    width = value;
+    fscanf(pfile,"%d",&value);
+    height = value;
+    p[i] = Node_create(thisnode, parnode, lcnode, rcnode, cutline, width, height);
+  }
+  return p;//point to the first element of the arr
+}
+      
+  
+  
+  
+  
+  
+  

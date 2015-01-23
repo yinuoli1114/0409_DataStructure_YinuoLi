@@ -1,0 +1,31 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <time.h>
+typedef struct node{
+  long value;
+  struct node *next;
+}Node;
+
+void Number_node(Node *list, int *count);
+Node *Load_File(char *Filename);
+int Save_File(char *Filename, Node *list);
+Node *Shell_Sort(Node *list);
+
+int main(int argc, char * * argv)
+{
+  char * filename1 = argv[1];
+  Node * list = Load_File(filename1);
+  printf("fuck = %ld", list -> value);
+  
+  list = Shell_Sort(list);
+  
+  char * filename2 = argv[2];
+  
+  int count = 0;
+  Number_node(list, &count);
+  printf("count = %d\n",count);
+  int num_node = Save_File(filename2, list);
+  num_node++;
+  return 0;
+}

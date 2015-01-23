@@ -1,0 +1,29 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+long *Load_File(char *Filename, int *Size);
+int Print_Seq(char *Filename, int Size);
+int Save_File(char *Filename, long *Array, int Size);
+void Shell_Insertion_Sort(long *Array, int Size, double *N_Comp, double *N_Move);
+
+int main(int argc, char * * argv)
+{
+  char * filename1 = argv[1];
+  int size = 0; 
+  long * arr;
+  arr = Load_File(filename1, &size);
+  
+  double N_Comp = 0;
+  double N_Move = 0;
+  Shell_Insertion_Sort(arr, size, &N_Comp, &N_Move);
+
+ // printf("%ld\n", *arr);
+ 
+  char * filename2 = argv[2];
+  Print_Seq(filename2, size);
+  
+  char * filename3 = argv[3];
+  Save_File(filename3, arr, size);
+  return 0;
+}

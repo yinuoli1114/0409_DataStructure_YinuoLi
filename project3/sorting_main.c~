@@ -1,0 +1,14 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <time.h>
+
+typedef struct node{
+  int thisnode;
+  int parnode;
+  int lcnode;
+  int rcnode;
+  char cutline;
+  int width;
+  int height;
+}Node;

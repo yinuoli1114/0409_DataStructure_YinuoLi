@@ -1,0 +1,290 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <time.h>
+
+void Shell_Insertion_Sort(long *Array, int Size, double *N_Comp, double *N_Move);
+void Shell_Selection_Sort(long *Array, int Size, double *N_Comp, double *N_Move);
+
+int Print_Seq(char *Filename, int Size);
+int Save_File(char *Filename, long *Array, int Size);
+int determinek(int p, int q);
+int maxk(int n);
+int maxq(int n);
+int powtwo(int p);
+int powthree(int q);
+
+long *Load_File(char *Filename, int *Size)
+{
+  FILE *pfile;
+  int i = 0;
+  if( !(pfile = fopen(Filename,"r")))
+  {
+    return NULL;
+  }
+  fscanf(pfile,"%d",Size);
+  //printf("a=%d\n",*Size);
+  long *arr = malloc(sizeof(long) * (*Size));
+  i = 0;
+  while(fscanf(pfile,"%ld",&arr[i]) == 1)
+  {
+    //printf("a=%ld\n",arr[i]);
+    i++;
+  }
+  fclose(pfile);
+  return arr;
+}
+
+
+void Shell_Insertion_Sort(long *Array, int Size, double *N_Comp, double *N_Move)
+{
+  N_Comp = 0;
+  N_Move = 0;
+  int k = maxk(Size);
+ // printf("k=%d\n",k);
+  int q = maxq(Size);
+ // printf("q=%d\n",q);
+  int p = 0;
+  int n = (q+2) * (q+1) / 2;
+ // printf("n=%d\n",n);
+  int maxn = n;
+  int *seq_arr = malloc(sizeof(int) * n);
+  int ind = 0;
+  while(ind < n )
+  {
+    seq_arr[n-1] = k;
+    if(q > 0)
+    {
+      q--;
+      p++;
+    }
+    else 
+    {
+      q = p-1;
+      p = 0;
+    }
+    // printf("q=%d\n",q);
+     // printf("p=%d\n",p);
+    k = powtwo(p) * powthree(q);
+    printf("k=%d\n",k);
+    n--;
+  }
+  
+  int j;
+  int i;
+  long temp;
+  
+  for(ind = 0; ind <maxn; ind++)
+  {
+    k = seq_arr[ind];
+    for(j = k; j <= Size-1; j++)
+    {
+      //printf("k=%d\n",k);
+      temp = Array[j];
+      i = j;
+      while((i >= k) && (Array[i-k] > temp))
+      {
+	N_Comp++;
+	Array[i] = Array[i-k];
+	N_Move++;
+	i = i - k;
+	Array[i] = temp;
+	N_Move++;
+      }
+    }
+    
+  }
+}
+
+void Shell_Selection_Sort(long *Array, int Size, double *N_Comp, double *N_Move)
+{
+  N_Comp = 0;
+  N_Move = 0;
+  int k = maxk(Size);
+ // printf("k=%d\n",k);
+  int q = maxq(Size);
+  //printf("q=%d\n",q);
+  int p = 0;
+  int n = (q+2) * (q+1) / 2;
+  //printf("n=%d\n",n);
+  int maxn = n;
+  int *seq_arr = malloc(sizeof(int) * n);
+  int ind = 0;
+  while(ind < n )
+  {
+    seq_arr[n-1] = k;
+    if(q > 0)
+    {
+      q--;
+      p++;
+    }
+    else 
+    {
+      q = p-1;
+      p = 0;
+    }
+     //printf("q=%d\n",q);
+     // printf("p=%d\n",p);
+    k = powtwo(p) * powthree(q);
+    //printf("k=%d\n",k);
+    n--;
+  }
+  
+  int j;
+  int i;
+  long temp;
+  int min;
+  //Sorting_begin = clock();
+   for(ind = 0; ind <maxn; ind++)
+  {
+    k = seq_arr[ind];
+    for(j = 0; j < Size; j++)
+    {
+      min = j;
+      i = j+k;
+      while(i < Size)
+      {
+	if(Array[i] < Array[min])
+	{
+	  N_Comp = N_Comp + 1;;
+	  min = i;
+	}
+	i = i+k;
+      }
+      if(min != j)
+      {
+	temp = Array[j];
+	Array[j] = Array[min];
+	Array[min] = temp;
+	N_Move = N_Move + 3;
+      }
+     }
+  }
+  //Sorting_end = clock();
+  //printf("Number of comparisions: %le\n", &N_Comp);
+  //printf("Number of moves: %le\n", &N_Move);
+}
+
+
+int Save_File(char *Filename, long *Array, int Size)
+{
+  FILE *pfile;
+  int i = 0;
+  pfile = fopen(Filename,"w");
+  fprintf(pfile,"%d\n",Size);
+   while(i < Size)
+  {
+    fprintf(pfile,"%ld\n",Array[i]);
+    i++;
+    //printf("a=%ld\n",Array[i]);
+  }
+  fclose(pfile);
+  return 0;
+}
+
+int Print_Seq(char *Filename, int Size)
+{
+  FILE *pfile;
+  int i = 0;
+  int k = maxk(Size);
+  //printf("k=%d\n",k);
+  int q = maxq(Size);
+  //printf("q=%d\n",q);
+  int p = 0;
+  int n = (q+2) * (q+1) / 2;
+  //printf("n=%d\n",n);
+  int maxn = n;
+  int *seq_arr = malloc(sizeof(int) * n);
+  while((n >= 1) )
+  {
+    seq_arr[n-1] = k;
+    if(q > 0)
+    {
+      q--;
+      p++;
+    }
+    else 
+    {
+      q = p-1;
+      p = 0;
+    }
+     //printf("q=%d\n",q);
+      //printf("p=%d\n",p);
+    k = powtwo(p) * powthree(q);
+   // printf("k=%d\n",k);
+    n--;
+  }
+  pfile = fopen(Filename,"w");
+  fprintf(pfile,"%d\n",maxn);
+  while(i < maxn)
+  {
+    fprintf(pfile,"%d\n",seq_arr[i++]);
+  }
+  fclose(pfile);
+  return 0;
+}
+
+/*int determinek(int *p, int *q)
+{
+  int k;
+  if(q > 0)
+  {
+    q--;
+    p++;
+  }
+  if(q == 0)
+  {
+    q = p-1;
+    p = 0;
+  }
+  k = powtwo(p) * powthree(q);
+  return k;
+}*/
+  
+
+int maxk(int n)
+{
+  int q = 0;
+  while(powthree(q) <= n)
+  {
+    q++;
+  }
+  q--;
+  return powthree(q);
+}
+
+int maxq(int n)
+{
+  int q = 0;
+  while(powthree(q) <= n)
+  {
+    q++;
+  }
+  q--;
+  return q;
+}
+
+int powtwo(int p)
+{
+  int answer;
+  if(p == 0)
+  {
+    return 1;
+  }
+  answer = 2 * powtwo(p-1);
+  return answer;
+}
+  
+int powthree(int q)
+{
+  int answer;
+  if(q == 0)
+  {
+    return 1;
+  }
+  answer = 3 * powthree(q-1);
+  return answer;
+}
+  
+  
+
